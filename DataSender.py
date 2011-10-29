@@ -9,7 +9,9 @@ except ImportError, e:
 	print 'Required: pySerial from http://pyserial.sourceforge.net/'
 	raise e
 
-SERIAL_BAUD_FILE = 'SerialBaud.h'
+import os
+
+SERIAL_BAUD_FILE = os.path.join(os.path.dirname(__file__), 'SerialBaud.h')
 SERIAL_BAUD_NAME = 'SERIAL_BAUD'
 TIMEOUT_DEFAULT = 0 # non-blocking read
 
@@ -37,8 +39,8 @@ class SerialGuard:
 			tokens = ''.join(baudDefineFile.readlines()).split()
 			nameIndex = tokens.index(SERIAL_BAUD_NAME)
 			serialBaud = int(tokens[nameIndex+1])
-		self.__arduinoSerial = serial.Serial(SERIAL_DEVICE, serialBaud,
-			timeout=self.__timeout)
+		self.__arduinoSerial = serial.Serial(self.__serialDevice,
+			serialBaud, timeout=self.__timeout)
 		return self.__arduinoSerial
 
 	def __exit__(self, excClass, excObj, tb):
