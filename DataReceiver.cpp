@@ -8,7 +8,10 @@ DataReceiver::DataReceiver() : numListeners(0), readIndex(0), valueIndex(0)
 
 void DataReceiver::setup() {
 	Serial.begin(SERIAL_BAUD);
-	Serial.println("Listening for data on serial!");
+}
+
+void DataReceiver::sendReady() {
+	Serial.println(READY_STRING);
 }
 
 void DataReceiver::addKey(const char* key, callbackPtr_t callbackPtr) {
