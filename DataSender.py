@@ -9,10 +9,21 @@ except ImportError, e:
 	print 'Required: pySerial from http://pyserial.sourceforge.net/'
 	raise e
 
-import os
+import os, time, sys
 
-SERIAL_BAUD_FILE = os.path.join(os.path.dirname(__file__), 'SerialBaud.h')
+SHARED_FILE = os.path.join(os.path.dirname(__file__), 'Shared.h')
 SERIAL_BAUD_NAME = 'SERIAL_BAUD'
+READY_STRING_NAME = 'READY_STRING'
+SHARED_VALUES = {}
+with open(SHARED_FILE) as sharedFile:
+	for line in sharedFile.readlines():
+		if line.startswith('#define'):
+			poundDefine, name, value = line.split(' ', 2)
+			value = value.strip()
+			if name == SERIAL_BAUD_NAME:
+				value = int(value)
+			SHARED_VALUES[name] = value
+
 TIMEOUT_DEFAULT = 0 # non-blocking read
 
 class SerialGuard:
@@ -35,10 +46,7 @@ class SerialGuard:
 		self.__timeout = readTimeout
 
 	def __enter__(self):
-		with open(SERIAL_BAUD_FILE) as baudDefineFile:
-			tokens = ''.join(baudDefineFile.readlines()).split()
-			nameIndex = tokens.index(SERIAL_BAUD_NAME)
-			serialBaud = int(tokens[nameIndex+1])
+		serialBaud = SHARED_VALUES[SERIAL_BAUD_NAME]
 		self.__arduinoSerial = serial.Serial(self.__serialDevice,
 			serialBaud, timeout=self.__timeout)
 		return self.__arduinoSerial
@@ -47,6 +55,30 @@ class SerialGuard:
 		if self.__arduinoSerial is not None:
 			self.__arduinoSerial.close()
 
+QUIET_DELAY = 0.5
+def WaitForReady(arduinoSerial):
+	"""
+	Wait until DataReceiver.sendReady() is called on the Arduino side.
+	Wait until the ready string is sent, and nothing more is sent for
+	half a second.
+	"""
+	readyString = SHARED_VALUES[READY_STRING_NAME].strip('"')
+	print 'Waiting for "%s" from Arduino.' % readyString
+	text = ''
+	quiet = 0
+	lastTime = time.time()
+	while (readyString not in text) or (quiet < QUIET_DELAY):
+		newText = arduinoSerial.readline()
+		currentTime = time.time()
+		if newText:
+			text += newText
+			sys.stdout.write(newText)
+			sys.stdout.flush()
+			lastTime = currentTime
+		else:
+			quiet = currentTime - lastTime
+	print 'Done waiting.'
+
 
 def Format(**kwargs):
 	"""
@@ -54,5 +86,4 @@ def Format(**kwargs):
 	with a DataReceiver object.
 	"""
 	return ''.join(['%s\t%s\n' % (k, v) for k, v in kwargs.iteritems()])
-
 
