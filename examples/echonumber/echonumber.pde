@@ -24,24 +24,7 @@ void numberSentCallback(const char* value) {
 	digitalWrite(PIN_LED_STATUS, LOW);
 }
 
-template<size_t SIZE>
-class WithArr {
-	private:
-		int arr[SIZE];
-	public:
-		WithArr() {};
-		void set(int i, int val) {
-			if (i < 0 || i >= SIZE) {
-				return;
-			}
-			arr[i] = val;
-		}
-};
-
 void setup() {
-	WithArr<5> withArr;
-	withArr.set(2, 5*4);
-
 	receiver.setup();
 	receiver.addKey("NUM", &numberSentCallback);
 	pinMode(PIN_LED_STATUS, OUTPUT);
