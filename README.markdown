@@ -11,13 +11,16 @@ Example
 See examples/ for a quick introduction. Even more briefly:
 
 Python:
+
 	with DataSender.SerialGuard('/dev/usb.serialmodemfa141') as s:
 		DataSender.WaitForReady(s)
 		while True:
 			... # generate a value
 			s.write(DataSender.Format(KEY=value))
 			... # maybe handle responses from the Arduino
+
 Arduino:
+
 	#include <DataReceiver.h>
 	DataReceiver<1> receiver; // templated on # keys expected
 	void callback(const char* value) {
