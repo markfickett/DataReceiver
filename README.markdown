@@ -12,11 +12,11 @@ See examples/ for a quick introduction. Even more briefly:
 
 Python:
 
-	with DataSender.SerialGuard('/dev/usb.serialmodemfa141') as s:
-		DataSender.WaitForReady(s)
+	with DataSender.SerialGuard('/dev/usb.serialmodemfa141') as arduinoSer:
+		DataSender.WaitForReady(arduinoSer)
 		while True:
 			... # generate a value
-			s.write(DataSender.Format(KEY=value))
+			arduinoSer.write(DataSender.Format(KEY=value))
 			... # maybe handle responses from the Arduino
 
 Arduino:
@@ -28,6 +28,7 @@ Arduino:
 	}
 	void setup() {
 		receiver.setup(); // Serial.begin
+		receiver.addKey("KEY", &callback);
 		receiver.sendReady(); // once ready to take Serial input
 	}
 	void loop() {
