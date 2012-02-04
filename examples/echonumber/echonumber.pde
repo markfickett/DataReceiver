@@ -11,7 +11,7 @@
 
 DataReceiver<NUM_KEYS> receiver;
 
-void numberSentCallback(const char* value) {
+void numberSentCallback(size_t size, const char* value) {
 	digitalWrite(PIN_LED_STATUS, HIGH);
 
 	float floatValue = atof(value);

@@ -14,17 +14,30 @@ import os, time, sys
 SHARED_FILE = os.path.join(os.path.dirname(__file__), 'Shared.h')
 SERIAL_BAUD_NAME = 'SERIAL_BAUD'
 READY_STRING_NAME = 'READY_STRING'
+NUMERIC_BYTE_LIMIT_NAME = 'NUMERIC_BYTE_LIMIT'
+END_OF_KEY_NAME = 'END_OF_KEY'
+MAX_VALUE_SIZE_NAME = 'MAX_VALUE_SIZE'
+INT_VALUES = (
+	SERIAL_BAUD_NAME,
+	NUMERIC_BYTE_LIMIT_NAME,
+	END_OF_KEY_NAME,
+	MAX_VALUE_SIZE_NAME,
+)
 SHARED_VALUES = {}
 with open(SHARED_FILE) as sharedFile:
 	for line in sharedFile.readlines():
 		if line.startswith('#define'):
 			poundDefine, name, value = line.split(' ', 2)
 			value = value.strip()
-			if name == SERIAL_BAUD_NAME:
+			if name in INT_VALUES:
 				value = int(value)
 			SHARED_VALUES[name] = value
 
 TIMEOUT_DEFAULT = 0 # non-blocking read
+
+NUMERIC_BYTE_LIMIT = SHARED_VALUES[NUMERIC_BYTE_LIMIT_NAME]
+END_OF_KEY = chr(SHARED_VALUES[END_OF_KEY_NAME])
+MAX_VALUE_SIZE = SHARED_VALUES[MAX_VALUE_SIZE_NAME]
 
 class SerialGuard:
 	"""
@@ -80,10 +93,43 @@ def WaitForReady(arduinoSerial):
 	print 'Done waiting.'
 
 
+def __FormatSingle(key, value):
+	"""
+	Format a single key/value pair.
+	The format is:
+		<key characters>\0<byte count>\xFF<value bytes>
+	for example,
+		MESG\06\xFFHello!
+	or
+		LORUM\0\1\1\xFFLorem ipsum... 256 chars ...dolor sit amet.
+	In the special case of a zero-length value, the format is trauncated:
+		<key characters>\0\xFF
+	Note that the byte count is effectively in base 255 (not 256), to allow
+	reservation of 0xFF as the number-stop byte value.
+	"""
+	n = len(value)
+	if n == 0:
+		return '%s%s%s' % (key, END_OF_KEY, chr(NUMERIC_BYTE_LIMIT))
+	elif n > MAX_VALUE_SIZE:
+		raise ValueError(('Cannot send %dB value'
+			' which is greater than %dB maximum: %s')
+			% (n, MAX_VALUE_SIZE, value))
+
+	packedSize = ''
+	while n > 0:
+		r = n % NUMERIC_BYTE_LIMIT
+		packedSize = chr(r) + packedSize
+		n = n / NUMERIC_BYTE_LIMIT
+	return '%s%s%s%s%s' % (key, END_OF_KEY,
+		packedSize, chr(NUMERIC_BYTE_LIMIT), value)
+
+
 def Format(**kwargs):
 	"""
 	Format a dictionary to send over serial to an Arduino which is listening
-	with a DataReceiver object.
+	with a DataReceiver object. Data is given as key-value pairs, where
+	the keys are specified as arbitrary keyword argument names, and values
+	are strings (or any byte sequence).
 	"""
-	return ''.join(['%s\t%s\n' % (k, v) for k, v in kwargs.iteritems()])
+	return ''.join([__FormatSingle(k, v) for k, v in kwargs.iteritems()])
 

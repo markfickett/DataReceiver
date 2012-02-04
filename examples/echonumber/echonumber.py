@@ -9,7 +9,7 @@ Before running, change the SERIAL_DEVICE to match the device for your Arduino.
 This can be found in the Arduino app, under Tools > Serial Port.
 """
 
-SERIAL_DEVICE = '/dev/tty.usbmodemfd131'
+SERIAL_DEVICE = '/dev/tty.usbmodemfa141'
 
 import os, sys, time
 

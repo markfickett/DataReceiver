@@ -23,7 +23,7 @@ Arduino:
 
 	#include <DataReceiver.h>
 	DataReceiver<1> receiver; // templated on # keys expected
-	void callback(const char* value) {
+	void callback(size_t size, const char* value) {
 		... // do something with value
 	}
 	void setup() {
