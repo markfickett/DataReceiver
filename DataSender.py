@@ -1,6 +1,5 @@
 __all__ = [
 	'SerialGuard',
-	'Send',
 ]
 
 try:
