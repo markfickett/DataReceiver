@@ -1,5 +1,6 @@
 __all__ = [
 	'SerialGuard',
+	'DummySerialGuard',
 ]
 
 try:
@@ -32,6 +33,7 @@ with open(SHARED_FILE) as sharedFile:
 				value = int(value)
 			SHARED_VALUES[name] = value
 
+READY_STRING = SHARED_VALUES[READY_STRING_NAME].strip('"')
 TIMEOUT_DEFAULT = 0 # non-blocking read
 
 NUMERIC_BYTE_LIMIT = SHARED_VALUES[NUMERIC_BYTE_LIMIT_NAME]
@@ -74,12 +76,11 @@ def WaitForReady(arduinoSerial):
 	Wait until the ready string is sent, and nothing more is sent for
 	half a second.
 	"""
-	readyString = SHARED_VALUES[READY_STRING_NAME].strip('"')
-	print 'Waiting for "%s" from Arduino.' % readyString
+	print 'Waiting for "%s" from Arduino.' % READY_STRING
 	text = ''
 	quiet = 0
 	lastTime = time.time()
-	while (readyString not in text) or (quiet < QUIET_DELAY):
+	while (READY_STRING not in text) or (quiet < QUIET_DELAY):
 		newText = arduinoSerial.readline()
 		currentTime = time.time()
 		if newText:
@@ -131,4 +132,24 @@ def Format(**kwargs):
 	are strings (or any byte sequence).
 	"""
 	return ''.join([__FormatSingle(k, v) for k, v in kwargs.iteritems()])
+
+
+class DummySerialGuard:
+	"""
+	Match SerialGuard, but print to stdout.
+	"""
+	def __init__(self, serialDevice, readTimeout=TIMEOUT_DEFAULT):
+		self.__sentReady = False
+	def __enter__(self):
+		return self
+	def __exit__(self, excClass, excObj, tb):
+		pass
+	def write(self, s):
+		print s
+	def readline(self):
+		if not self.__sentReady:
+			self.__sentReady = True
+			return READY_STRING
+		else:
+			return ''
 
