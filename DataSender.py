@@ -1,6 +1,7 @@
 __all__ = [
 	'SerialGuard',
 	'DummySerialGuard',
+	'GetSharedValues',
 ]
 
 try:
@@ -17,21 +18,49 @@ READY_STRING_NAME = 'READY_STRING'
 NUMERIC_BYTE_LIMIT_NAME = 'NUMERIC_BYTE_LIMIT'
 END_OF_KEY_NAME = 'END_OF_KEY'
 MAX_VALUE_SIZE_NAME = 'MAX_VALUE_SIZE'
-INT_VALUES = (
+INT_VALUE_NAMES = (
 	SERIAL_BAUD_NAME,
 	NUMERIC_BYTE_LIMIT_NAME,
 	END_OF_KEY_NAME,
 	MAX_VALUE_SIZE_NAME,
 )
-SHARED_VALUES = {}
-with open(SHARED_FILE) as sharedFile:
+
+def GetSharedValues(sharedFile, typeConversionMap={}):
+	"""
+	Read #define values from a (C/C++ header) file, facilitating sharing
+	those values between C/C++ and Python.
+
+	Limitations: Lines must start with '#define', and spaces must separate
+	the '#define' from the name and the name from the value. The value
+	continues to the end of the line; it may contain spaces, but is
+	stripped. (This is unlikely to exactly match C++ parsing.)
+
+	@param sharedFile an open file, supporting readlines(), to a (C/C++
+		header) file from which to read
+	@param typeConversionMap optional map of string names to functions which
+		will convert their values to other types. For example, if the
+		file contains '#define PI 3.14', a map with {'PI': float} will
+		result in the returned dict containing {'PI': float('3.14')}
+	@return a dict of {name: value}
+	"""
+	sharedValues = {}
 	for line in sharedFile.readlines():
 		if line.startswith('#define'):
 			poundDefine, name, value = line.split(' ', 2)
 			value = value.strip()
-			if name in INT_VALUES:
-				value = int(value)
-			SHARED_VALUES[name] = value
+			mapperFn = typeConversionMap.get(name)
+			if mapperFn:
+				value = mapperFn(value)
+			sharedValues[name] = value
+	return sharedValues
+
+
+with open(SHARED_FILE) as sharedFile:
+	typeConversionMap = {}
+	for intName in INT_VALUE_NAMES:
+		typeConversionMap[intName] = int
+	SHARED_VALUES = GetSharedValues(sharedFile,
+		typeConversionMap=typeConversionMap)
 
 READY_STRING = SHARED_VALUES[READY_STRING_NAME].strip('"')
 TIMEOUT_DEFAULT = 0 # non-blocking read
