@@ -32,8 +32,10 @@ def GetSharedValues(sharedFile, typeConversionMap={}):
 
 	Limitations: Lines must start with '#define', and spaces must separate
 	the '#define' from the name and the name from the value. The value
-	continues to the end of the line; it may contain spaces, but is
-	stripped. (This is unlikely to exactly match C++ parsing.)
+	continues to the end of the line; it may contain spaces. Name and value
+	are stripped of padding whitespace. The exception is that names with no
+	value are allowed, and assigned True. (This is unlikely to match parsing
+	in C++ in many cases!)
 
 	@param sharedFile an open file, supporting readlines(), to a (C/C++
 		header) file from which to read
@@ -46,8 +48,14 @@ def GetSharedValues(sharedFile, typeConversionMap={}):
 	sharedValues = {}
 	for line in sharedFile.readlines():
 		if line.startswith('#define'):
-			poundDefine, name, value = line.split(' ', 2)
-			value = value.strip()
+			parts = line.split(' ', 2)
+			if len(parts) == 2:
+				poundDefine, name = parts
+				value = True
+			else:
+				poundDefine, name, value = parts
+				value = value.strip()
+			name = name.strip()
 			mapperFn = typeConversionMap.get(name)
 			if mapperFn:
 				value = mapperFn(value)
