@@ -173,16 +173,21 @@ def Format(**kwargs):
 
 class DummySerialGuard:
 	"""
-	Match SerialGuard, but print to stdout.
+	Match SerialGuard, but print to stdout (or do not print at all).
 	"""
-	def __init__(self, serialDevice, readTimeout=TIMEOUT_DEFAULT):
+	def __init__(self, serialDevice, readTimeout=TIMEOUT_DEFAULT,
+			silent=False):
 		self.__sentReady = False
+		self.__silent = silent
 	def __enter__(self):
 		return self
 	def __exit__(self, excClass, excObj, tb):
 		pass
 	def write(self, s):
-		print s
+		if not self.__silent:
+			print s
+	def flush(self):
+		pass
 	def readline(self):
 		if not self.__sentReady:
 			self.__sentReady = True
