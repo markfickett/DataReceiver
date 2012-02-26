@@ -53,6 +53,7 @@ private:
 		for(int i = 0; i < numListeners; i++) {
 			if (strcmp(key, listeners[i].key) == 0) {
 				(*listeners[i].callbackPtr)(size, value);
+				Serial.write(ACK_CHAR_VALUE);
 				return;
 			}
 		}
@@ -62,6 +63,7 @@ private:
 		Serial.print("\" (sent with value \"");
 		Serial.print(value);
 		Serial.println("\", ignoring.");
+		Serial.write(NACK_CHAR_VALUE);
 	}
 
 	void processChar(int c) {

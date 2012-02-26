@@ -17,3 +17,5 @@
 #define NUMERIC_BYTE_LIMIT 255
 #define END_OF_KEY 0
 #define MAX_VALUE_SIZE 255
+#define ACK_CHAR_VALUE 6
+#define NACK_CHAR_VALUE 21

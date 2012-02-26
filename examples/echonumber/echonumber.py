@@ -27,11 +27,13 @@ if __name__ == '__main__':
 
 		while True:
 			textInput = raw_input('Enter a number: ')
-			arduinoSerial.write(DataSender.Format(NUM=textInput))
+			output = DataSender.SendAndWait(arduinoSerial,
+				NUM=textInput)
+			#arduinoSerial.write(DataSender.Format(NUM=textInput))
 
-			time.sleep(0.1)
-
-			line = arduinoSerial.readline()
+			line = output
+			#time.sleep(0.1)
+			#line = arduinoSerial.readline()
 			while line:
 				sys.stdout.write(line)
 				sys.stdout.flush()

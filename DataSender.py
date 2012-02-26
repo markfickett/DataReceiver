@@ -2,6 +2,8 @@ __all__ = [
 	'SerialGuard',
 	'DummySerialGuard',
 	'GetSharedValues',
+	'SendAndWait',
+	'Format',
 ]
 
 try:
@@ -18,11 +20,15 @@ READY_STRING_NAME = 'READY_STRING'
 NUMERIC_BYTE_LIMIT_NAME = 'NUMERIC_BYTE_LIMIT'
 END_OF_KEY_NAME = 'END_OF_KEY'
 MAX_VALUE_SIZE_NAME = 'MAX_VALUE_SIZE'
+ACK_NAME = 'ACK_CHAR_VALUE'
+NACK_NAME = 'NACK_CHAR_VALUE'
 INT_VALUE_NAMES = (
 	SERIAL_BAUD_NAME,
 	NUMERIC_BYTE_LIMIT_NAME,
 	END_OF_KEY_NAME,
 	MAX_VALUE_SIZE_NAME,
+	ACK_NAME,
+	NACK_NAME,
 )
 
 def GetSharedValues(sharedFile, typeConversionMap={}):
@@ -76,6 +82,9 @@ TIMEOUT_DEFAULT = 0 # non-blocking read
 NUMERIC_BYTE_LIMIT = SHARED_VALUES[NUMERIC_BYTE_LIMIT_NAME]
 END_OF_KEY = chr(SHARED_VALUES[END_OF_KEY_NAME])
 MAX_VALUE_SIZE = SHARED_VALUES[MAX_VALUE_SIZE_NAME]
+
+ACK = chr(SHARED_VALUES[ACK_NAME])
+NACK = chr(SHARED_VALUES[NACK_NAME])
 
 class SerialGuard:
 	"""
@@ -169,6 +178,29 @@ def Format(**kwargs):
 	are strings (or any byte sequence).
 	"""
 	return ''.join([__FormatSingle(k, v) for k, v in kwargs.iteritems()])
+
+
+def SendAndWait(arduinoSerial, **kwargs):
+	"""
+	Format and send the given key/value pairs over the given serial. Wait
+	to hear positive or negative acknowledgement for each key. This works
+	on the (tenuous) assumption that any synchronous response from the
+	Arduino will not contain the acknowledgement (or negative ack) bytes.
+	@return any output (or an empty string) which is not the acknowledgement
+	"""
+	numKeys = len(kwargs)
+	numAcks = 0
+	arduinoSerial.write(Format(**kwargs))
+	output = ''
+	while numAcks < numKeys:
+		c = arduinoSerial.read()
+		if not c:
+			continue
+		if c in (ACK, NACK):
+			numAcks += 1
+		else:
+			output = output + c
+	return output
 
 
 class DummySerialGuard:
