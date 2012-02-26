@@ -1,6 +1,11 @@
 #pragma once
 
+#if defined(ARDUINO) && ARDUINO >= 100
+#include "Arduino.h"
+#else
 #include "WProgram.h"
+#endif
+
 #include "Shared.h"
 
 // maximum lengths for keys and values
