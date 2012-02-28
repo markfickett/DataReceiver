@@ -12,12 +12,14 @@ See examples/ for a quick introduction. Even more briefly:
 
 Python:
 
-	with DataSender.SerialGuard('/dev/usb.serialmodemfa141') as arduinoSer:
-		DataSender.WaitForReady(arduinoSer)
+	sender = DataSender.Sender('/dev/usb.serialmodemfa141')
+	with sender:
 		while True:
-			... # generate a value
-			arduinoSer.write(DataSender.Format(KEY=value))
-			... # maybe handle responses from the Arduino
+			... # Generate a value.
+			sender.send(KEY=value)
+
+			# Maybe handle responses from the Arduino.
+			sender.readAndPrint()
 
 Arduino:
 
