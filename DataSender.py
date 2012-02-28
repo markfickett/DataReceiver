@@ -142,6 +142,8 @@ class DummySerialGuard:
 			print s
 	def flush(self):
 		pass
+	def read(self):
+		return ACK
 	def readline(self):
 		if not self.__sentReady:
 			self.__sentReady = True
