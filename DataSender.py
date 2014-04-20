@@ -213,7 +213,9 @@ def Format(**kwargs):
 	the keys are specified as arbitrary keyword argument names, and values
 	are strings (or any byte sequence).
 	"""
-	return ''.join([__FormatSingle(k, v) for k, v in kwargs.iteritems()])
+	return ''.join(
+		[__FormatSingle(k, str(v))
+		for k, v in kwargs.iteritems()])
 
 
 class _SenderMixin:
@@ -261,9 +263,14 @@ class _SenderMixin:
 			self.getSerial().write(Format(**kwargs))
 
 	def __waitForAcks(self):
+		numSkipped = 0
 		while self.__awaitedAckCount > 0:
 			c = self.getSerial().read()
 			if not c:
+				numSkipped += 1
+				if numSkipped > 40:
+					# TODO Why does this occur? Hang on Arduino side? Serial issue?
+					raise RuntimeError('no data for ack for too long, aborting')
 				continue
 			if c in self.__ACK_BYTES:
 				self.__awaitedAckCount -= 1
