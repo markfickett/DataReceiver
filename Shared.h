@@ -19,3 +19,5 @@
 #define MAX_VALUE_SIZE 255
 #define ACK_CHAR_VALUE 6
 #define NACK_CHAR_VALUE 21
+// The value which Python boolean True values are converted to, when sent.
+#define TRUE_STRING "True"
