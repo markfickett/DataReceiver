@@ -95,7 +95,7 @@ class SerialGuard:
 	A context guard to encapsulate opening (and closing) a USB serial
 	connection. This depends on pySerial, and returns the serial
 	object opened, which can then be written and read.
-	
+
 	This parses the serial baud from SerialBaud.h, which is
 	used also by DataReceiver.
 	"""
@@ -223,9 +223,14 @@ class _SenderMixin:
 	"""
 	Manage structured (mainly one-way) communication over Serial.
 	This class is to extend a SerialGuard class (dummy or real).
+
+	Args:
+		startReady: If True, do not wait for "Ready" from the Arduino before
+				sending. Useful for devices such as the Teensey which use emulated
+				Serial for communication.
 	"""
-	def __init__(self):
-		self.__ready = False
+	def __init__(self, startReady=False):
+		self.__ready = bool(startReady)
 		self.__awaitedAckCount = 0
 		self.__bufferedOutput = '' # stored while waiting for acks
 		self.__lock = threading.Lock()
@@ -299,9 +304,13 @@ class _SenderMixin:
 		sys.stdout.flush()
 
 class Sender(SerialGuard, _SenderMixin):
-	def __init__(self, serialDevice):
-		SerialGuard.__init__(self, serialDevice)
-		_SenderMixin.__init__(self)
+	def __init__(
+			self,
+			serialDevice,
+			readTimeout=TIMEOUT_DEFAULT,
+			startReady=False):
+		SerialGuard.__init__(self, serialDevice, readTimeout=readTimeout)
+		_SenderMixin.__init__(self, startReady=startReady)
 
 class DummySender(DummySerialGuard, _SenderMixin):
 	def __init__(self, serialDevice, silent=False):

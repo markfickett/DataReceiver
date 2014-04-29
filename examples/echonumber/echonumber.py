@@ -10,7 +10,7 @@ Before running, change the SERIAL_DEVICE to match the device for your Arduino.
 This can be found in the Arduino app, under Tools > Serial Port.
 """
 
-SERIAL_DEVICE = '/dev/tty.usbmodemfa141'
+SERIAL_DEVICE = '/dev/tty.usbmodem12341'
 
 import os, sys, time
 
@@ -23,11 +23,15 @@ sys.path.append(
 import DataSender
 
 if __name__ == '__main__':
+	# With USB communication (Teensey), pass readTimeout=0.05, startReady=True.
+	# This is necessary because timeout=0 (normally non-blocking) does actually
+	# block, and pyserial does not reset the microcontroller when it connects.
 	sender = DataSender.Sender(SERIAL_DEVICE)
 	with sender:
 
-		# Calling waitForReady explicitly is optional, but keeps the
-		# first user interaction snappy.
+		# Calling waitForReady explicitly is optional, but keeps the first user
+		# interaction snappy. It also provides the option to explicitly reset the
+		# microcontroller program.
 		sender.waitForReady()
 
 		while True:
