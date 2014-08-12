@@ -3,7 +3,7 @@ DataReceiver
 
 Arduino library to provide simple sending of key/value pairs from a computer to the Arduino. (For example: I have a CPU usage value on my desktop computer, and want to use an Arduino to control some lights in response to that. This gets the number to from desktop to Arduino.)
 
-To match DataReceiver (the Arduino side) is DataSender in Python. It depends on [pySerial](http://pyserial.sourceforge.net/) for serial communication.
+To match DataReceiver (the Arduino side) is data_sender in Python. It depends on [pySerial](http://pyserial.sourceforge.net/) for serial communication.
 
 Example
 -------
@@ -12,14 +12,14 @@ See examples/ for a quick introduction. Even more briefly:
 
 Python:
 
-	sender = DataSender.Sender('/dev/usb.serialmodemfa141')
+	sender = data_sender.Sender('/dev/usb.serialmodemfa141')
 	with sender:
 		while True:
 			... # Generate a value.
-			sender.send(KEY=value)
+			sender.Send(KEY=value)
 
 			# Maybe handle responses from the Arduino.
-			sender.readAndPrint()
+			sender.ReadAndPrint()
 
 Arduino:
 
