@@ -14,8 +14,12 @@
 #define SERIAL_BAUD 115200
 
 #define READY_STRING "Ready."
+// The exclusive upper bound for data byte values, leaving room for special
+// values (specifically, the end-of-value byte).
 #define NUMERIC_BYTE_LIMIT 255
 #define END_OF_KEY 0
+// Arbitrary limit on number of bytes in a transmitted value. Used for buffer
+// allocation on the Arduino.
 #define MAX_VALUE_SIZE 255
 #define ACK_CHAR_VALUE 6
 #define NACK_CHAR_VALUE 21
