@@ -20,7 +20,7 @@
 #define END_OF_KEY 0
 // Arbitrary limit on number of bytes in a transmitted value. Used for buffer
 // allocation on the Arduino.
-#define MAX_VALUE_SIZE 255
+#define MAX_VALUE_SIZE 512
 #define ACK_CHAR_VALUE 6
 #define NACK_CHAR_VALUE 21
 // The value which Python boolean True values are converted to, when sent.
