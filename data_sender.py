@@ -7,6 +7,7 @@ __all__ = [
   'Format',
   'SerialGuard',
   'DummySerialGuard',
+  'TimeoutError',
 ]
 
 try:
@@ -33,6 +34,7 @@ INT_VALUE_NAMES = (
   ACK_NAME,
   NACK_NAME,
 )
+
 
 def GetSharedValues(shared_file, type_conversion_map={}):
   """
@@ -222,6 +224,10 @@ def Format(**kwargs):
     for k, v in kwargs.iteritems()])
 
 
+class TimeoutError(RuntimeError):
+  pass
+
+
 class _SenderMixin:
   __ACK_BYTES = (ACK, NACK)
   """
@@ -279,7 +285,7 @@ class _SenderMixin:
         current_time = time.time()
         if current_time - start_time > ACK_TIMEOUT:
           # TODO Why does this occur? Hang on Arduino side? Serial issue?
-          raise RuntimeError(
+          raise TimeoutError(
               'no data for ack for %.2fs ( > %.2fs), aborting'
               % (current_time - start_time, ACK_TIMEOUT))
         continue
