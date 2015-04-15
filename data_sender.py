@@ -268,6 +268,11 @@ class _SenderMixin:
     This works on the (tenuous) assumption that any synchronous
     response from the Arduino will not contain the acknowledgement
     (or negative ack) bytes.
+
+    Throws:
+      TimeoutError if no ack is received after too long while preparing to send.
+          Clients may want to catch this if they can resend or safely drop the
+          previous message.
     """
     with self.__lock:
       if not self.__ready:
@@ -298,6 +303,9 @@ class _SenderMixin:
     """
     Reads and return any buffered output. (This may block to wait
     for acks, but will not block for normal output.)
+
+    Throws:
+      TimeoutError as with Send.
     """
     with self.__lock:
       if not self.__ready:
