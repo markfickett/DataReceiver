@@ -291,8 +291,9 @@ class _SenderMixin:
         if current_time - start_time > ACK_TIMEOUT:
           # TODO Why does this occur? Hang on Arduino side? Serial issue?
           raise TimeoutError(
-              'no data for ack for %.2fs ( > %.2fs), aborting'
-              % (current_time - start_time, ACK_TIMEOUT))
+              'no data for ack for %.2fs ( > %.2fs), aborting; got %r'
+              % (current_time - start_time, ACK_TIMEOUT,
+                 self.__buffered_output))
         continue
       if c in self.__ACK_BYTES:
         self.__awaited_ack_count -= 1
